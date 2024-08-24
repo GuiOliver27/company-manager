@@ -1,12 +1,7 @@
 <!DOCTYPE html>
-<html lang="pt" xmlns="http://www.w3.org/1999/xhtml">
+<html lang="pt" layout:decorate="~{layout}">
 
-<head layout:decorate="~{layout}">
-	<meta charset="UTF-8" />
-
-	<!-- Custom styles for this template -->
-	<link href="/css/style.css" rel="stylesheet" />
-</head>
+<head charset="UTF-8">
 
 <body>
 
@@ -28,12 +23,12 @@
 		</nav>
 
 		<div class="container" id="cadastro">
-			<form action="/departamentos/salvar" method="POST">
+			<form th:action="@{/departamentos/salvar}" th:object="${departamento}" method="POST">
 				<div class="form-row">
 					<div class="form-group col-md-6">
 						<label for="nome">Departamento</label>
 						<input type="text" class="form-control" id="nome" placeholder="Nome Departamento"
-							autofocus="autofocus" name="nome" value="" />
+							autofocus="autofocus" th:field="*{nome}" />
 					</div>
 				</div>
 				<input type="hidden" id="id" name="id" value="" />
