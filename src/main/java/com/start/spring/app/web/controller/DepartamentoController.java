@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import com.start.spring.app.domain.Departamento;
 import com.start.spring.app.service.DepartamentoService;
@@ -16,43 +19,57 @@ import com.start.spring.app.service.DepartamentoService;
 @RequestMapping("/departamentos")
 public class DepartamentoController {
 
-	@Autowired
-	private DepartamentoService service;
-	
-	@GetMapping("/cadastrar")
-	public String cadastrar(Departamento departamento) {
-		return "/departamento/cadastro";
-	}
-	
-	@GetMapping("/listar")
-	public String listar(ModelMap model) {
-		model.addAttribute("departamentos", service.buscarTodos());
-		return "/departamento/lista";
-	}
+    @Autowired
+    private DepartamentoService service;
+    
+    @GetMapping("/cadastrar")
+    public String cadastrar(Departamento departamento) {
+        return "/departamento/cadastro";
+    }
+    
+    @GetMapping("/listar")
+    public String listar(ModelMap model) {
+        model.addAttribute("departamentos", service.buscarTodos());
+        return "/departamento/lista";
+    }
 
-	@PostMapping("/salvar")
-	public String salvar(Departamento departamento) {
-		service.salvar(departamento);
-		return "redirect:/departamentos/cadastrar";
-	}
+    @PostMapping("/salvar")
+    public String salvar(Departamento departamento) {
+        service.salvar(departamento);
+        return "redirect:/departamentos/cadastrar";
+    }
 
-	@GetMapping("/editar/{id}")
-	public String preEditar(@PathVariable("id") Long id, ModelMap model) {
-		model.addAttribute("departamento", service.buscarPorId(id));
-		return "/departamento/cadastro";
-	}
+    @GetMapping("/editar/{id}")
+    public String preEditar(@PathVariable("id") Long id, ModelMap model) {
+        model.addAttribute("departamento", service.buscarPorId(id));
+        return "/departamento/cadastro";
+    }
 
-	@PostMapping("/editar")
-	public String editar(Departamento departamento) {
-		service.editar(departamento);
-		return "redirect/departamentos/cadastrar";
-	}
+    @PostMapping("/editar")
+    public String editar(Departamento departamento) {
+        service.editar(departamento);
+        return "redirect:/departamentos/cadastrar";
+    }
 
-	@GetMapping
-	public String excluir(@PathVariable("id") Long id, ModelMap model) {
-		if(!service.departamentoTemCargos(id)) {
-			service.excluir(id);
-		}
-		return listar(model);
-	}
+    @GetMapping("/excluir/{id}")
+    public String excluir(@PathVariable("id") Long id, ModelMap model) {
+        if(!service.departamentoTemCargos(id)) {
+            service.excluir(id);
+        }
+        return listar(model);
+    }
+
+    // Mapeamento para tratar erros
+    @GetMapping("/error")
+    public String handleError(ModelMap model, @RequestParam(value = "errorMsg", required = false) String errorMsg) {
+        model.addAttribute("errorMsg", errorMsg != null ? errorMsg : "Erro desconhecido. Tente novamente mais tarde.");
+        return "error-page";
+    }
+
+    // Exceção 404 - Página não encontrada
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public String handle404Error(ModelMap model) {
+        model.addAttribute("errorMsg", "Página não encontrada.");
+        return "error-page";
+    }
 }
