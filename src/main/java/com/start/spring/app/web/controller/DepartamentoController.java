@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.start.spring.app.domain.Departamento;
 import com.start.spring.app.service.DepartamentoService;
@@ -34,8 +35,9 @@ public class DepartamentoController {
     }
 
     @PostMapping("/salvar")
-    public String salvar(Departamento departamento) {
+    public String salvar(Departamento departamento, RedirectAttributes attr) {
         service.salvar(departamento);
+		attr.addFlashAttribute("success", "Departamento inserido com sucesso");
         return "redirect:/departamentos/cadastrar";
     }
 
@@ -46,27 +48,30 @@ public class DepartamentoController {
     }
 
     @PostMapping("/editar")
-    public String editar(Departamento departamento) {
+    public String editar(Departamento departamento, RedirectAttributes attr) {
         service.editar(departamento);
+		attr.addFlashAttribute("success", "Departamento editado com sucesso");
         return "redirect:/departamentos/cadastrar";
     }
 
     @GetMapping("/excluir/{id}")
     public String excluir(@PathVariable("id") Long id, ModelMap model) {
-        if(!service.departamentoTemCargos(id)) {
-            service.excluir(id);
-        }
+
+        if(service.departamentoTemCargos(id)) {
+			model.addAttribute("fail", "Departamento não removido. Possui cargo(s) vinculado(s)");
+		} else {
+			service.excluir(id);
+			model.addAttribute("success", "Departamento excluído com sucesso");
+		}
         return listar(model);
     }
 
-    // Mapeamento para tratar erros
     @GetMapping("/error")
     public String handleError(ModelMap model, @RequestParam(value = "errorMsg", required = false) String errorMsg) {
         model.addAttribute("errorMsg", errorMsg != null ? errorMsg : "Erro desconhecido. Tente novamente mais tarde.");
         return "error-page";
     }
 
-    // Exceção 404 - Página não encontrada
     @ExceptionHandler(NoHandlerFoundException.class)
     public String handle404Error(ModelMap model) {
         model.addAttribute("errorMsg", "Página não encontrada.");
